@@ -177,7 +177,12 @@ def _as_obs_dict(result: StepResult[dict[str, Any]]) -> dict[str, Any]:
 
 def _metadata(obs: dict[str, Any]) -> dict[str, Any]:
     meta = obs.get("metadata")
-    return meta if isinstance(meta, dict) else {}
+    if isinstance(meta, dict):
+        return meta
+    meta = obs.get("last_info")
+    if isinstance(meta, dict):
+        return meta
+    return {}
 
 
 def _reward_done(result: StepResult[dict[str, Any]], obs: dict[str, Any]) -> tuple[float, bool]:

@@ -279,6 +279,11 @@ class TicketEpisodeEngine:
         meta["normalized_episode"] = norm
         meta["resolved_flag"] = self.status == TICKET_STATUS_RESOLVED
 
+        info_enriched = dict(info)
+        info_enriched["reward_breakdown"] = reward_model.model_dump()
+        info_enriched["normalized_episode"] = norm
+        info_enriched["resolved_flag"] = self.status == TICKET_STATUS_RESOLVED
+
         return SupportObservation(
             done=done,
             reward=reward,
@@ -291,7 +296,7 @@ class TicketEpisodeEngine:
             step_count=self.step_count,
             max_steps=self._max_steps,
             actions_taken=list(self.actions_log),
-            last_info=dict(info),
+            last_info=info_enriched,
         )
 
     def _finalize(self, step_reward: float, *, done: bool, info: dict[str, Any]) -> SupportObservation:

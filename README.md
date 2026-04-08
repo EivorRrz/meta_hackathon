@@ -187,9 +187,9 @@ Raw rewards are normalized to **[0, 1]** at episode end using min-max bounds `[-
 
 | Task | Score (0-1) | Notes |
 | --- | ---: | --- |
-| support_classify | -- | Single `classify` action; most models score high |
-| support_routing | -- | Needs classify + correct resolve/escalate |
-| support_resolution | -- | Full multi-step; exact strings + history ack |
+| support_classify | 0.76 | Single `classify` action; most models score high |
+| support_routing | 0.05 | Needs classify + correct resolve/escalate |
+| support_resolution | 0.06 | Full multi-step; exact strings + history ack |
 
 ## License
 
