@@ -13,6 +13,7 @@ RUN apt-get update \
 
 COPY pyproject.toml README.md openenv.yaml /app/
 COPY support_env /app/support_env
+COPY inference.py client.py /app/
 
 RUN pip install --upgrade pip \
     && pip install /app
@@ -23,3 +24,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
     CMD curl -fsS http://127.0.0.1:8000/health || exit 1
 
 CMD ["uvicorn", "support_env.server.app:app", "--host", "0.0.0.0", "--port", "8000"]
+ 

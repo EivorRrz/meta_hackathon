@@ -72,12 +72,23 @@ Baseline ticket IDs (deterministic defaults) live in `DEFAULT_TICKET_BY_TASK`.
 
 ## Local quickstart
 
+### Linux / macOS
+
 ```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]"
+pytest                           # unit tests (should all pass)
+uvicorn support_env.server.app:app --host 0.0.0.0 --port 8000
+```
+
+### Windows (PowerShell)
+
+```powershell
 python -m venv .venv
-.venv\\Scripts\\activate  # Windows
+.\.venv\Scripts\Activate.ps1     # or: & .\.venv\Scripts\Activate.ps1
 pip install -e ".[dev]"
 pytest
-uvicorn support_env.server.app:app --host 0.0.0.0 --port 8000
+python -m uvicorn support_env.server.app:app --host 0.0.0.0 --port 8000
 ```
 
 ## Environment file (`.env`)
@@ -108,11 +119,24 @@ Health probe: `GET http://127.0.0.1:8000/health`
 
 ## Baseline inference
 
+Start the server first (Docker or local uvicorn), then in another terminal:
+
 ```bash
-set OPENENV_BASE_URL=http://127.0.0.1:8000
-set HF_TOKEN=hf_...
-set API_BASE_URL=https://router.huggingface.co/v1
-set MODEL_NAME=Qwen/Qwen2.5-72B-Instruct
+# Set variables (or use .env file)
+export OPENENV_BASE_URL=http://127.0.0.1:8000
+export HF_TOKEN=hf_...
+export API_BASE_URL=https://router.huggingface.co/v1
+export MODEL_NAME=Qwen/Qwen2.5-72B-Instruct
+python inference.py
+```
+
+Windows equivalent:
+
+```powershell
+$env:OPENENV_BASE_URL = "http://127.0.0.1:8000"
+$env:HF_TOKEN = "hf_..."
+$env:API_BASE_URL = "https://router.huggingface.co/v1"
+$env:MODEL_NAME = "Qwen/Qwen2.5-72B-Instruct"
 python inference.py
 ```
 
@@ -142,13 +166,30 @@ openenv validate
 openenv validate --url https://<your-space>.hf.space
 ```
 
-## Baseline scores (fill after you run locally)
+## Reward function design
 
-| Task | Score (normalized) | Notes |
+| Signal | Value | When |
+| ---: | ---: | --- |
+| Correct classification | +0.20 | First correct `classify` action |
+| Correct action commit | +0.30 | First correct `resolve` or `escalate` |
+| Good response | +0.30 | First correct `respond` text |
+| Correct resolution | +0.20 | Resolution text matches approved wording |
+| Wrong action | -0.20 | Incorrect classification, response, or commit |
+| Repeated action | -0.30 | Same fingerprint as previous step |
+| Ignored history | -0.20 | HARD only: first `respond` missing history ack |
+| Efficiency penalty | -0.05 | Each step beyond optimal count |
+
+Raw rewards are normalized to **[0, 1]** at episode end using min-max bounds `[-3.0, 1.2]`.
+
+## Baseline scores
+
+> Run `python inference.py` locally to fill these. Scores depend on the LLM used.
+
+| Task | Score (0-1) | Notes |
 | --- | ---: | --- |
-| support_classify | _TBD_ | Router-class LM baseline |
-| support_routing | _TBD_ | |
-| support_resolution | _TBD_ | Requires exact strings + history ack |
+| support_classify | -- | Single `classify` action; most models score high |
+| support_routing | -- | Needs classify + correct resolve/escalate |
+| support_resolution | -- | Full multi-step; exact strings + history ack |
 
 ## License
 
